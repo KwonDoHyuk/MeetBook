@@ -15,7 +15,8 @@
     <v-text-field
       rounded
       solo
-      flat>
+      flat
+      style="max-width: 450px;">
     </v-text-field>
     <v-btn icon>
       <v-icon>mdi-magnify</v-icon>
@@ -57,7 +58,7 @@
 
     <!-- 계정 아이콘 -->
     <v-menu offset-y>
-      <template v-slot:activator="{ on, attrs}">
+      <template v-slot:activator="{ on, attrs }">
         <v-btn
           icon
           v-bind="attrs"
