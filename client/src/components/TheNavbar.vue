@@ -1,11 +1,13 @@
 <template>
   <v-app-bar
-    app>
+    app
+    color="#FAF6EA"
+    >
     <v-toolbar-title>Meetbook</v-toolbar-title>
     <v-btn
-        href="#"
-        target="_blank"
+        to="/conf/list"
         text
+        plain
       >
       <span class="mr-2">모임</span>
     </v-btn>
@@ -13,27 +15,30 @@
 
     <!-- 검색 -->
     <v-text-field
-      rounded
       solo
-      flat
-      style="max-width: 450px;">
+      placeholder="검색"
+      append-outer-icon="mdi-magnify"
+      hide-details="true"
+      style="max-width: 450px;"
+
+      :model="keyword"
+      >
     </v-text-field>
-    <v-btn icon>
-      <v-icon>mdi-magnify</v-icon>
-    </v-btn>
+
+    <v-spacer></v-spacer>
 
     <div v-if="login" class="navbar-menu-loggedin">
       <v-btn
-          href="#"
-          target="_blank"
+          to="/conf/create"
           text
+          plain
         >
         <span class="mr-2">모임 개설</span>
       </v-btn>
       <v-btn
-          href="#"
-          target="_blank"
+          to="/conf/schedule"
           text
+          plain
         >
         <span class="mr-2">나의 일정</span>
       </v-btn>
@@ -41,16 +46,16 @@
     </div>
     <div v-else class="navbar-menu-not-loggedin">
       <v-btn
-          href="#"
-          target="_blank"
+          to="/login"
           text
+          plain
         >
         <span class="mr-2">로그인</span>
       </v-btn>
       <v-btn
-          href="#"
-          target="_blank"
+          to="/signup"
           text
+          plain
         >
         <span class="mr-2">회원가입</span>
       </v-btn>
@@ -90,11 +95,16 @@ export default {
     return {
       login: this.$store.state.login,
       profileMenuItems: [
-        { title: '내 프로필'},
-        { title: '계정 설정'},
-        { title: '로그아웃'},
+        { title: '내 프로필', to:'/profile',},
+        { title: '계정 설정', to:'/accounts/settings',},
+        { title: '로그아웃', to:'/logout',},
       ],
+      keyword: '',
     }
+  },
+
+  methods: {
+
   },
 }
 </script>
