@@ -1,14 +1,9 @@
 <template>
-  <v-app-bar
-    app
-    color="#FAF6EA"
-    >
+  <v-app-bar app color="#FAF6EA">
     <v-toolbar-title>Meetbook</v-toolbar-title>
-    <v-btn
-        to="/conf/list"
-        text
-        plain
-      >
+    <v-btn text plain
+      to="/conf/list"
+    >
       <span class="mr-2">모임</span>
     </v-btn>
     <v-spacer></v-spacer>
