@@ -113,19 +113,18 @@ export default {
     },
 
     // 검색
+    // Navbar에서의 검색은 실제 검색을 수행하는 것이 아니라,
+    // 검색 페이지에 검색 키워드로 전달하는 방식으로 수행됩니다.
     searchKeyword: function () {
       let q = this.keyword
       console.log(q)
-      // axios({
-      //   method: 'get',
-      //   url: ''
-      // })
-    }
+      this.$router.push({name: 'Search', params: {'keyword': q}})
+    },
   },
 
   computed: {
     // 로그인 여부 확인
-    ...mapGetters(['isLogin',])
+    ...mapGetters(['isLoggedin',])
   },
 }
 </script>
