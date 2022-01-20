@@ -1,6 +1,10 @@
 <template>
   <v-app-bar app color="#FAF6EA">
-    <v-toolbar-title>Meetbook</v-toolbar-title>
+    <v-toolbar-title>
+      <router-link :to="{name: 'Home'}" class="text-decoration-none">
+      Meetbook
+      </router-link>
+    </v-toolbar-title>
     <v-btn text plain to="/conf/list">
       <span class="mr-2">모임</span>
     </v-btn>
@@ -21,7 +25,7 @@
 
     <v-spacer></v-spacer>
 
-    <div v-if="login" class="navbar-menu-loggedin">
+    <div v-if="loggedIn" class="navbar-menu-loggedin">
       <v-btn
           to="/conf/create"
           text
@@ -40,14 +44,14 @@
     </div>
     <div v-else class="navbar-menu-not-loggedin">
       <v-btn
-          to="/login"
+          :to="{name: 'Login'}"
           text
           plain
         >
         <span class="mr-2">로그인</span>
       </v-btn>
       <v-btn
-          to="/signup"
+          :to="{name: 'Signup'}"
           text
           plain
         >
@@ -89,7 +93,7 @@
 
 <script>
 // import axios from 'axios'
-import { mapGetters } from 'vuex'
+// import { mapGetters } from 'vuex'
 export default {
   name: "navbar",
   data: function () {
@@ -106,10 +110,7 @@ export default {
   methods: {
     // 로그아웃
     logout: function () {
-      // localStorage.removeItem('토큰')
-      // this.$$store.dispatch('로그아웃 관련 Vuex Method')
-      // this.$router.push({name: 'Home'}) // 홈으로 보내기
-      console.log('로그아웃')
+      this.$store.dispatch('auth/logout')
     },
 
     // 검색
@@ -124,7 +125,9 @@ export default {
 
   computed: {
     // 로그인 여부 확인
-    ...mapGetters(['isLoggedin',])
+    loggedIn: function () {
+      return this.$store.state.auth.status.loggedIn
+    },
   },
 }
 </script>
