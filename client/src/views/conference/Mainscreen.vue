@@ -56,18 +56,10 @@
       <!-- 채팅 화면 -->
       <div class="d-flex flex-column">
         <!-- 채팅창 -->
-<<<<<<< HEAD
         <v-card outlined class="overflow-y-auto ma-4 chatlogbox" min-height="560px" max-height="560px">
           <p v-for="(log, idx) in chatlog" :key="idx">
             {{ log.user }} ({{ log.timestamp }}): <br>{{ log.content }}
           </p>
-=======
-        <v-card outlined class="overflow-y-auto ma-4" min-height="560px" max-height="560px">
-          <p v-for="(log, idx) in chatlog" :key="idx">
-            {{ log.user }} ({{ log.timestamp }}): <br>{{ log.content }}
-          </p>
-          
->>>>>>> dd47d54 (feat: add conference screen)
         </v-card>
         <!-- 채팅 폼 -->
         <div class="d-flex flex-row">
@@ -155,24 +147,21 @@ export default {
     onInputChat: function () {
       if (this.inputChat != '') {
         console.log('input:' + this.inputChat)
-<<<<<<< HEAD
+
         this.chatlog.push({user: '지금 사용자', timestamp: '지금 시간', content: this.inputChat})
-=======
->>>>>>> dd47d54 (feat: add conference screen)
         this.inputChat = ''
       }
     },
 
   },
-<<<<<<< HEAD
+
   watch: {
     chatlog: function () {
       const chatlogbox = document.querySelector('.chatlogbox')
       chatlogbox.scrollTop = chatlogbox.scrollHeight
     },
   }
-=======
->>>>>>> dd47d54 (feat: add conference screen)
+
 
 }
 </script>
