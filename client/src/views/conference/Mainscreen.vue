@@ -50,6 +50,9 @@
 
     <!-- 영상 외 (오른쪽 화면) -->
     <v-col class="col-12 col-md-3 d-flex flex-column">
+
+      
+      <Chat />
       <!-- 채팅 화면 -->
       <div class="d-flex flex-column">
         <!-- 채팅창 -->
@@ -68,6 +71,9 @@
           </div>
         </div>
       </div>
+
+
+
       <!-- 기타 조작부 -->
       <v-divider class="my-5"></v-divider>
       <div class="d-flex flex-row justify-space-between">
@@ -86,10 +92,11 @@
 </template>
 
 <script>
+import Chat from '@/components/conference/Chat'
 export default {
   name: 'Mainscreen',
   components: {
-
+    Chat,
   },
 
   props: {
