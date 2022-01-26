@@ -4,7 +4,6 @@
     <v-btn color="primary" @click="joinSession()">
       준비 다 되셨나요???
     </v-btn>
-    <input v-model="myUserName" type="text">
   </div>  
   <div v-if="session">
     <div>
@@ -12,15 +11,7 @@
       <v-btn @click="leaveSession" color="error">
         방에서 나가기
       </v-btn>
-      <v-btn @click="videoMute">
-        <v-icon v-if="videoMuted === true">mdi-video-check-outline</v-icon>
-        <v-icon v-else>mdi-video-check</v-icon>
-      </v-btn>
-      <v-btn v-if="subscribers.length >= 1" @click="audioMute">
-        <v-icon v-if="audioMuted === true">mdi-volume-off</v-icon>
-        <v-icon v-else>mdi-volume-high</v-icon>
-      </v-btn>     
-    </div>    
+    </div>
     <v-row>
       <v-col cols="6">
         <user-video :stream-manager="mainStreamManager"/>
@@ -29,32 +20,7 @@
         <user-video v-for="sub in subscribers" :key="sub.stream.connection.connectionId" :stream-manager="sub"/>
       </v-col>
     </v-row>
-    <div>      
-      <label>
-        <v-icon>mdi-chat</v-icon>
-      </label>
-      <select v-model="talkTo">
-        <option v-for="(connection,n) in connections" :key="n" :value="n">
-          {{n!==0 ? JSON.parse(connection.data.split('%')[0]).clientData : "모두에게"}}
-        </option>
-      </select>
-      <input id="textInput" v-bind:value="inputText" v-on:input="updateInput">
-      <v-btn @click="sendMessage">
-        메세지 보내기
-      </v-btn>
-      <select v-model="banTo">
-        <option v-for="(connection,n) in connections" :key="n" :value="n">
-          {{n!==0 ? JSON.parse(connection.data.split('%')[0]).clientData : "강퇴하기"}}
-        </option>
-      </select>      
-      <v-btn @click="kickUser">
-        강퇴
-      </v-btn>      
-    </div>
-    <div id="chat">
-    </div>
   </div>
-  
 </v-container>
 </template>
 <script>
@@ -74,15 +40,10 @@ export default {
 			session: undefined,
 			mainStreamManager: undefined,
 			publisher: undefined,
-			subscribers: [],      
-      talkTo: 0,
-      connections: [],
-      banTo: 0,
-      videoMuted: false,
-      audioMuted: false,
+			subscribers: [],
+
       mySessionId: null,
-      myUserName: 'chan',
-      inputText: '',
+      myUserName: 'chan'
     }
   },
   components:{
@@ -94,17 +55,11 @@ export default {
   methods: {
     joinSession () {
       this.OV = new OpenVidu();
-      this.OV.setAdvancedConfiguration({
-          publisherSpeakingEventsOptions: {
-              interval: 100,   // Frequency of the polling of audio streams in ms (default 100)
-              threshold: -50  // Threshold volume in dB (default -50)
-          }
-      });
       this.session = this.OV.initSession();
 
       this.session.on('streamCreated', ({ stream }) => {
         const subscriber = this.session.subscribe(stream)
-        this.subscribers.push(subscriber)             
+        this.subscribers.push(subscriber)
       })
 
       this.session.on('streamDestroyed', ({ stream }) => {
@@ -118,45 +73,8 @@ export default {
         console.warn(exception)
       })
 
-      this.session.on('signal:my-chat', (event) => {
-        const chat = document.getElementById("chat")
-        const p = document.createElement("p")
-        p.innerText = `${JSON.parse(event.from.data.split('%')[0]).clientData}: ${event.data}`
-        chat.append(p)        
-      })
-
-      this.session.on('connectionCreated', (event) => {
-        this.connections.push(event.connection)        
-        console.log("connections:", this.connections)
-      })
-
-      this.session.on('connectionDestroyed', (event)=> {
-        console.log("disconnection:", event)
-        const index = this.connections.indexOf(event.connection, 0)
-        console.log("index:", index)
-        if (index >= 0) {
-          this.connections.splice(index, 1)
-        }
-      })
-
-      this.session.on('signal:kick-msg', () => {
-        alert("강퇴당했습니다.")
-        this.$router.push({ name: 'Home'})
-      })
-      
-
-      //수정?
-      this.session.on('publisherStartSpeaking', (event) => {
-          console.log('User ' + event.connection.connectionId + ' start speaking');
-      });
-
-      this.session.on('publisherStopSpeaking', (event) => {
-          console.log('User ' + event.connection.connectionId + ' stop speaking');
-      });
-
       // user token
       this.getToken(this.mySessionId).then(token => {
-        console.log("token:",token)
         this.session.connect(token, { clientData: this.myUserName})
           .then(() => {
             let publisher = this.OV.initPublisher(undefined, {
@@ -171,7 +89,7 @@ export default {
             })
 
             this.mainStreamManager = publisher
-            this.publisher = publisher            
+            this.publisher = publisher
 
             this.session.publish(this.publisher)            
           })
@@ -265,76 +183,6 @@ export default {
 					// })
 			});
 		},
-    videoMute() {      
-      if (this.videoMuted) {
-        this.publisher.publishVideo(true)
-        this.videoMuted = false        
-      } else {
-        this.publisher.publishVideo(false)
-        this.videoMuted = true
-      }
-      console.log("publisher:",this.publisher)
-    },
-    audioMute() {
-      if (this.audioMuted) {
-        this.publisher.publishAudio(true)
-        this.audioMuted = false
-      } else {
-        this.publisher.publishAudio(false)
-        this.audioMuted = true
-      }
-    },
-    updateInput: function(event) {
-      var updatedText = event.target.value
-      this.inputText = updatedText
-    },
-    sendMessage(){
-      if(this.talkTo === 0) {
-        this.session.signal({
-          data: this.inputText,
-          to: [],
-          type: 'my-chat'
-        })
-        .then(() => {          
-          console.log('Message successfully sent')
-          this.inputText = ''
-        })
-        .catch(error => {
-          console.error(error)
-        })
-      } else {
-        this.session.signal({
-          data: this.inputText,
-          to: [this.connections[0],this.connections[this.talkTo]],
-          type: 'my-chat'
-        })
-        .then(() => {          
-          console.log('Private Message successfully sent')
-          this.inputText = ''
-        })
-        .catch(error => {
-          console.error(error)
-        })
-      }
-    },
-    kickUser(){
-      console.log("connection:", this.connections[this.banTo])
-      if(this.banTo !== 0){
-        this.session.signal({
-          to: [this.connections[this.banTo]],
-          type: 'kick-msg'
-        })
-        .then(res => console.log(res))
-        .catch(err => console.error(err))
-        this.session.forceDisconnect(this.connections[this.banTo])
-        this.banTo = 0
-      }
-    }
   }
 }
 </script>
-<style scoped>
-#textInput{
-  background-color: lightgray;
-}
-</style>

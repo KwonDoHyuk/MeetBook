@@ -16,8 +16,6 @@ import Search from '@/views/Search'
 
 import Mainscreen from '@/views/conference/Mainscreen'
 
-import Mainscreen from '@/views/conference/Mainscreen'
-
 Vue.use(VueRouter)
 
 const routes = [
