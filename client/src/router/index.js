@@ -83,7 +83,7 @@ const routes = [
 
   
   {
-    path: '/test/mainscreen',
+    path: '/test/mainscreen/:conferenceId',
     name: 'Mainscreen',
     component: Mainscreen
   },
