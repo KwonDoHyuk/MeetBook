@@ -87,6 +87,7 @@ const routes = [
     name: 'Mainscreen',
     component: Mainscreen
   },
+
 ]
 
 const router = new VueRouter({
