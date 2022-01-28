@@ -2,7 +2,7 @@
   <div>
 
     <!-- 입장 대화상자 -->
-    <v-dialog v-model="yetSession" max-width="320px">
+    <v-dialog v-model="yetSession" max-width="320px" persistent>
       <v-card class="pa-3">
         <v-card-title>{{conference.title}}</v-card-title>
         <p class="text-center">
@@ -16,27 +16,54 @@
             입장
           </v-btn>
           <v-btn class="my-5" :to="{name: 'Home'}">
-            취소
+            나가기
           </v-btn>
         </div>
+      </v-card>
+    </v-dialog>
+
+    <!-- 에러 정보 -->
+    <v-dialog v-model="errorDialog" max-width="320px">
+      <v-card class="pa-3">
+        <v-card-tile>에러</v-card-tile>
+        <p class="text-center">
+
+        </p>
+        <v-btn @click="errorDialog = false">
+          확인
+        </v-btn>
       </v-card>
     </v-dialog>
 
     <!-- 회의 화면은 위 대화상자를 통해 입장한 다음 표시됩니다 -->
     <v-row class="align-stretch" v-if="!yetSession">
 
+      <v-col class="col-12">
+
+
+      </v-col>
+
       <!-- 영상 목록 -->
       <v-col class="col-12 col-md-9 d-flex flex-column">
 
         <!-- 사용자 화면 -->
         <div>
-          <v-card class="ma-4">현재 접속한 사용자 화면
+          <v-card class="ma-4">
             <UserVideo :stream-manager="mainStreamManager" class="current-user-video"/>
+            {{ publisher.stream.creationTime }} 
 
-            <v-btn v-show="publisher.publishVideo" @click="publisher.publishVideo = false">화면 끄기</v-btn>
-            <v-btn v-show="!publisher.publishVideo" @click="publisher.publishVideo = true">화면 켜기</v-btn>
-            <v-btn v-show="publisher.publishAudio" @click="publisher.publishAudio = false">음소거</v-btn>
-            <v-btn v-show="!publisher.publishAudio" @click="publisher.publishAudio = true">소리 켜기</v-btn>
+            <v-btn v-show="videoEnabled" @click="publisher.publishVideo(false); videoEnabled = false"
+            width="128px">
+              <v-icon>mdi-video-off</v-icon> 화면 끄기</v-btn>
+            <v-btn v-show="!videoEnabled" @click="publisher.publishVideo(true); videoEnabled = true"
+            width="128px">
+              <v-icon>mdi-video</v-icon> 화면 켜기</v-btn>
+            <v-btn v-show="audioEnabled" @click="publisher.publishAudio(false); audioEnabled = false"
+            width="128px">
+              <v-icon>mdi-microphone-off</v-icon> 음소거</v-btn>
+            <v-btn v-show="!audioEnabled" @click="publisher.publishAudio(true); audioEnabled = true"
+            width="128px">
+              <v-icon>mdi-microphone</v-icon> 소리 켜기</v-btn>
           </v-card>
         </div>
         <!-- 주 진행자 화면 -->
@@ -50,17 +77,23 @@
               <div>
                 <v-menu offset-y>
                   <template v-slot:activator="{attrs, on}">
-                    <UserVideo :stream-manager="sub" />
+                    <UserVideo :stream-manager="sub" class="subscribers-video" />
                     <v-card v-bind="attrs" v-on="on">
-                      사용자 {{ n }}
+                      사용자 {{  }}
                     </v-card>
                   </template>
                   <v-list>
-                    <v-list-item link @click="onOffcamera(n)">
+                    <v-list-item v-show="sub.stream.videoActive" link @click="sub.subscribeToVideo(false); ">
                       화면 끄기
                     </v-list-item>
-                    <v-list-item link @click="onMute(n)">
+                    <v-list-item v-show="!sub.stream.videoActive" link @click="sub.subscribeToVideo(true); ">
+                      화면 켜기
+                    </v-list-item>
+                    <v-list-item v-show="sub.stream.audioActive" link @click="sub.subscribeToAudio(false);">
                       음소거
+                    </v-list-item>
+                    <v-list-item v-show="!sub.stream.audioActive" link @click="sub.subscribeToAudio(true);">
+                      소리 켜기
                     </v-list-item>
                     <v-divider></v-divider>
                     <v-list-item link @click="onKick(n)">
@@ -112,7 +145,7 @@
           <v-btn>
             환경설정
           </v-btn>
-          <v-btn color="accent" @click="leaveSession  ">
+          <v-btn color="accent" @click="leaveSession">
             나가기
           </v-btn>
         </div>
@@ -140,7 +173,6 @@ import Chat from '@/components/conference/Chat'
 const OPENVIDU_SERVER_URL = "https://" + location.hostname + ":4443"
 const OPENVIDU_SERVER_SECRET = 'MY_SECRET'
 
-
 export default {
   name: 'Mainscreen',
   components: {
@@ -153,6 +185,8 @@ export default {
 
   data: function () {
     return {
+
+      
 
       OV: undefined,
       mainStreamManager: undefined,
@@ -170,9 +204,13 @@ export default {
       conference: {
 
       },
+
+      audioEnabled: undefined,
+      videoEnabled: undefined,
       
       
       inputChat: '',
+      errorDialog: false,
 
       
 
@@ -238,6 +276,9 @@ export default {
 							insertMode: 'APPEND',	// How the video is inserted in the target element 'video-container'
 							mirror: false       	// Whether to mirror your local video or not
             })
+
+            this.videoEnabled = publisher.publishVideo
+            this.audioEnabled = publisher.publishAudio
 
             this.mainStreamManager = publisher
             this.publisher = publisher
@@ -325,6 +366,9 @@ export default {
 
 
 
+
+    
+
     onOffcamera: function (userid) {
       console.log('offcam' + userid)
     },
@@ -364,5 +408,11 @@ export default {
 </script>
 
 <style>
-  
+  .current-user-video video {
+    max-width: 320px;
+  }
+
+  .subscribers-video video {
+    max-width: 240px;
+  }
 </style>
