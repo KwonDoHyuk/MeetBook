@@ -1,33 +1,43 @@
 <template>
   <div>
-    <v-dialog
-    v-model="yetSession"
-    max-width="290px">
-      <v-card>
-        <v-card-title>
-          회의에 입장합니다.
-        </v-card-title>
-        <v-btn
-        @click="joinSession(); yetSession = false">
-          확인
-        </v-btn>
-        <v-btn
-        :to="{name: 'Home'}">
-          취소
-        </v-btn>
-      </v-card>
 
+    <!-- 입장 대화상자 -->
+    <v-dialog v-model="yetSession" max-width="320px">
+      <v-card class="pa-3">
+        <v-card-title>{{conference.title}}</v-card-title>
+        <p class="text-center">
+          회의에 입장합니다.
+        </p>
+
+        <v-spacer></v-spacer>
+
+        <div class="d-flex justify-space-around">
+          <v-btn color="primary" class="my-5" @click="joinSession(); yetSession = false">
+            입장
+          </v-btn>
+          <v-btn class="my-5" :to="{name: 'Home'}">
+            취소
+          </v-btn>
+        </div>
+      </v-card>
     </v-dialog>
 
-
-
+    <!-- 회의 화면은 위 대화상자를 통해 입장한 다음 표시됩니다 -->
     <v-row class="align-stretch" v-if="!yetSession">
+
       <!-- 영상 목록 -->
       <v-col class="col-12 col-md-9 d-flex flex-column">
+
         <!-- 사용자 화면 -->
         <div>
-          <v-card class="ma-4">현재 접속한 사용자 화면</v-card>
-          <UserVideo :stream-manager="mainStreamManager" />
+          <v-card class="ma-4">현재 접속한 사용자 화면
+            <UserVideo :stream-manager="mainStreamManager" class="current-user-video"/>
+
+            <v-btn v-show="publisher.publishVideo" @click="publisher.publishVideo = false">화면 끄기</v-btn>
+            <v-btn v-show="!publisher.publishVideo" @click="publisher.publishVideo = true">화면 켜기</v-btn>
+            <v-btn v-show="publisher.publishAudio" @click="publisher.publishAudio = false">음소거</v-btn>
+            <v-btn v-show="!publisher.publishAudio" @click="publisher.publishAudio = true">소리 켜기</v-btn>
+          </v-card>
         </div>
         <!-- 주 진행자 화면 -->
         <div>
@@ -125,6 +135,8 @@ import { OpenVidu } from 'openvidu-browser'
 import UserVideo from '@/components/conference/UserVideo'
 import Chat from '@/components/conference/Chat'
 
+// OpenVidu 접속 설정
+// 추후에 따로 빼어서 모듈화, 환경변수화해야 할 부분입니다.
 const OPENVIDU_SERVER_URL = "https://" + location.hostname + ":4443"
 const OPENVIDU_SERVER_SECRET = 'MY_SECRET'
 
@@ -136,7 +148,7 @@ export default {
   },
 
   props: {
-
+  
   },
 
   data: function () {
@@ -154,7 +166,15 @@ export default {
       
       participants: null,
       showMenu: false,
+      
+      conference: {
+
+      },
+      
+      
       inputChat: '',
+
+      
 
       chatlog: [
         {user: '사용자 1', timestamp: '2011-10-05T14:48:00', content: '우리 개발 화이팅'},
@@ -176,6 +196,12 @@ export default {
 
   created: function () {
     this.mySessionId = String(this.$route.params.conferenceId)
+    
+    // 테스트용 데이터 탑재
+    this.conference = {
+      title: '회의 제목',
+
+    }
   },
 
   methods: {
@@ -338,5 +364,5 @@ export default {
 </script>
 
 <style>
-
+  
 </style>
