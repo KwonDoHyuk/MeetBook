@@ -122,12 +122,18 @@
         <div class="d-flex flex-column">
           <!-- 채팅창 -->
           <v-card outlined class="overflow-y-auto ma-4 chatlogbox" min-height="560px" max-height="560px">
+            
             <p v-for="(log, idx) in chatlog" :key="idx">
               {{ log.user }} ({{ log.timestamp }}): <br>{{ log.content }}
             </p>
           </v-card>
           <!-- 사용자 선택 -->
           <div class="ChatConnection">
+            <v-select label="누구에게 메시지를 보낼까요?" v-model="chatConnection">
+
+            </v-select>
+
+
             <select v-model="chatConnection">
               <option value="0">모두에게</option>
               <option v-for="sub in subscribers" :key="sub.stream.connection.connectionId" :value="sub.stream.connection.connectionId">
@@ -224,19 +230,6 @@ export default {
       
 
       chatlog: [
-        {user: '사용자 1', timestamp: '2011-10-05T14:48:00', content: '우리 개발 화이팅'},
-        {user: '사용자 1', timestamp: '2011-10-05T14:48:00', content: '백엔드 화이팅'},
-        {user: '사용자 1', timestamp: '2011-10-05T14:48:00', content: '백엔드 화이팅'},
-        {user: '사용자 1', timestamp: '2011-10-05T14:48:00', content: '백엔드 화이팅'},
-        {user: '사용자 1', timestamp: '2011-10-05T14:48:00', content: '백엔드 화이팅'},
-        {user: '사용자 1', timestamp: '2011-10-05T14:48:00', content: '백엔드 화이팅'},
-        {user: '사용자 1', timestamp: '2011-10-05T14:48:00', content: '백엔드 화이팅'},
-        {user: '사용자 1', timestamp: '2011-10-05T14:48:00', content: '프론트엔드 화이팅'},
-        {user: '사용자 1', timestamp: '2011-10-05T14:48:00', content: '프론트엔드 화이팅'},
-        {user: '사용자 1', timestamp: '2011-10-05T14:48:00', content: '프론트엔드 화이팅'},
-        {user: '사용자 1', timestamp: '2011-10-05T14:48:00', content: '프론트엔드 화이팅'},
-        {user: '사용자 1', timestamp: '2011-10-05T14:48:00', content: '프론트엔드 화이팅'},
-        {user: '사용자 1', timestamp: '2011-10-05T14:48:00', content: '프론트엔드 화이팅'},
       ],
       chatConnection: 0,
 
@@ -277,6 +270,17 @@ export default {
 
       this.session.on('exception', ({ exception }) => {
         console.warn(exception)
+      })
+
+      // 채팅 로그 작성
+      this.session.on('signal:my-chat', (event) => {
+        console.log(event)
+        const timestamp = new Date()
+        this.chatlog.push({
+          user: `${JSON.parse(event.from.data).clientData}`,
+          timestamp: `${timestamp.toLocaleString('ko-KR', {timeZone: 'Asia/Seoul'})}`,
+          content: `${event.data}`
+        })
       })
 
       // user token
@@ -429,6 +433,11 @@ export default {
       }
     },
 
+  },
+  computed: {
+    chatList: function () {
+      return ['모두에게']
+    }
   },
 
   watch: {
