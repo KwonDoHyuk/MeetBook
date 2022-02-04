@@ -50,7 +50,7 @@
         <div>
           <v-card class="ma-4">
             <UserVideo :stream-manager="mainStreamManager" class="current-user-video"/>
-            {{ publisher.stream.creationTime }} 
+            
 
             <v-btn v-show="videoEnabled" @click="publisher.publishVideo(false); videoEnabled = false"
             width="128px">
@@ -126,13 +126,22 @@
               {{ log.user }} ({{ log.timestamp }}): <br>{{ log.content }}
             </p>
           </v-card>
+          <!-- 사용자 선택 -->
+          <div class="ChatConnection">
+            <select v-model="chatConnection">
+              <option value="0">모두에게</option>
+              <option v-for="sub in subscribers" :key="sub.stream.connection.connectionId" :value="sub.stream.connection.connectionId">
+                {{sub.stream.connection.length !== 0 ? JSON.parse(sub.stream.connection.data).clientData : "모두에게"}}
+              </option>
+            </select>
+          </div>
           <!-- 채팅 폼 -->
           <div class="d-flex flex-row">
             <div class="col-8">
-            <v-textarea no-resize v-model="inputChat" @keyup.enter="onInputChat"></v-textarea>
+            <v-textarea no-resize v-model="inputChat" @keyup.enter="sendMessage"></v-textarea>
             </div>
             <div class="col-4">
-            <v-btn block @click="onInputChat">보내기</v-btn>
+            <v-btn block @click="sendMessage">보내기</v-btn>
             </div>
           </div>
         </div>
@@ -170,7 +179,7 @@ import Chat from '@/components/conference/Chat'
 
 // OpenVidu 접속 설정
 // 추후에 따로 빼어서 모듈화, 환경변수화해야 할 부분입니다.
-const OPENVIDU_SERVER_URL = "https://" + location.hostname + ":4443"
+const OPENVIDU_SERVER_URL = process.env.VUE_APP_OPENVIDU_SERVER_URL
 const OPENVIDU_SERVER_SECRET = 'MY_SECRET'
 
 export default {
@@ -229,6 +238,8 @@ export default {
         {user: '사용자 1', timestamp: '2011-10-05T14:48:00', content: '프론트엔드 화이팅'},
         {user: '사용자 1', timestamp: '2011-10-05T14:48:00', content: '프론트엔드 화이팅'},
       ],
+      chatConnection: 0,
+
     }
   },
 
@@ -245,6 +256,12 @@ export default {
   methods: {
     joinSession: function () {
       this.OV = new OpenVidu()
+      this.OV.setAdvancedConfiguration({
+        publisherSpeakingEventsOptions: {
+          interval: 100,
+          threshold: -50,
+        },
+      })
       this.session = this.OV.initSession()
       this.session.on('streamCreated', ({ stream }) => {
         const subscriber = this.session.subscribe(stream)
@@ -365,18 +382,6 @@ export default {
 		},
 
 
-
-
-    
-
-    onOffcamera: function (userid) {
-      console.log('offcam' + userid)
-    },
-
-    onMute: function (userid) {
-      console.log('Mute' + userid)
-    },
-
     onKick: function (userid) {
       console.log('kick' + userid)
     },
@@ -391,6 +396,36 @@ export default {
 
         this.chatlog.push({user: '지금 사용자', timestamp: '지금 시간', content: this.inputChat})
         this.inputChat = ''
+      }
+    },
+
+    sendMessage: function () {
+      if(this.chatConnection === 0) {
+        this.session.signal({
+          data: this.inputChat,
+          to: [],
+          type: 'my-chat'
+        })
+        .then(() => {          
+          console.log('Message successfully sent')
+          this.inputChat = ''
+        })
+        .catch(error => {
+          console.error(error)
+        })
+      } else {
+        this.session.signal({
+          data: this.inputChat,
+          to: [this.publisher.stream.connection.connectionId, this.chatConnection],
+          type: 'my-chat'
+        })
+        .then(() => {          
+          console.log('Private Message successfully sent')
+          this.inputChat = ''
+        })
+        .catch(error => {
+          console.error(error)
+        })
       }
     },
 
