@@ -1,6 +1,5 @@
 <template>
   <div>
-
     <!-- 입장 대화상자 -->
     <v-dialog v-model="yetSession" max-width="320px" persistent>
       <v-card class="pa-3">
@@ -8,6 +7,7 @@
         <p class="text-center">
           회의에 입장합니다.
         </p>
+        
 
         <v-spacer></v-spacer>
 
@@ -44,31 +44,40 @@
       </v-col>
 
       <!-- 영상 목록 -->
-      <v-col class="col-12 col-md-9 d-flex flex-column">
+      <v-col class="col-12 col-md-8 d-flex flex-column">
 
         <!-- 사용자 화면 -->
         <div>
-          <v-card class="ma-4">
-            <UserVideo :stream-manager="mainStreamManager" class="current-user-video"/>
-            
-
-            <v-btn v-show="videoEnabled" @click="publisher.publishVideo(false); videoEnabled = false"
-            width="128px">
-              <v-icon>mdi-video-off</v-icon> 화면 끄기</v-btn>
-            <v-btn v-show="!videoEnabled" @click="publisher.publishVideo(true); videoEnabled = true"
-            width="128px">
-              <v-icon>mdi-video</v-icon> 화면 켜기</v-btn>
-            <v-btn v-show="audioEnabled" @click="publisher.publishAudio(false); audioEnabled = false"
-            width="128px">
-              <v-icon>mdi-microphone-off</v-icon> 음소거</v-btn>
-            <v-btn v-show="!audioEnabled" @click="publisher.publishAudio(true); audioEnabled = true"
-            width="128px">
-              <v-icon>mdi-microphone</v-icon> 소리 켜기</v-btn>
-          </v-card>
+          <v-row class="row ma-1">
+            <v-col class="justify-center">
+              <UserVideo :stream-manager="mainStreamManager" class="current-user-video text-center"/>
+              <div class="d-flex justify-space-around flex-grow-1">
+                <v-btn class="mx-1" v-show="videoEnabled" @click="publisher.publishVideo(false); videoEnabled = false"
+                width="128px">
+                  <v-icon>mdi-video-off</v-icon> 화면 끄기</v-btn>
+                <v-btn class="mx-1" v-show="!videoEnabled" @click="publisher.publishVideo(true); videoEnabled = true"
+                width="128px">
+                  <v-icon>mdi-video</v-icon> 화면 켜기</v-btn>
+                <v-btn class="mx-1" v-show="audioEnabled" @click="publisher.publishAudio(false); audioEnabled = false"
+                width="128px">
+                  <v-icon>mdi-microphone-off</v-icon> 음소거</v-btn>
+                <v-btn class="mx-1" v-show="!audioEnabled" @click="publisher.publishAudio(true); audioEnabled = true"
+                width="128px">
+                  <v-icon>mdi-microphone</v-icon> 소리 켜기</v-btn>
+              </div>
+            </v-col>
+            <v-col>
+              <v-card>
+                <v-card-title>회의 정보</v-card-title>
+                <v-card-text>회의 내용</v-card-text>
+                <v-card-text>회의 진행 시간</v-card-text>
+              </v-card>
+            </v-col>
+          </v-row>
         </div>
         <!-- 주 진행자 화면 -->
         <div>
-          <v-card class="ma-4" min-height="480px">주 진행자 화면</v-card>
+          <v-card class="ma-1" min-height="480px">주 진행자 화면</v-card>
         </div>
         <!-- 기타 청취자 화면 -->
         <v-sheet class="my-4">
@@ -109,29 +118,34 @@
             </v-slide-item>
           </v-slide-group>
         </v-sheet>
-        <p>order를 부여해서 배치하거나 세 줄로 나누어 배치하기 (주 진행자가 가운데에 오는 배치)</p>
+        
       </v-col>
 
 
       <!-- 영상 외 (오른쪽 화면) -->
-      <v-col class="col-12 col-md-3 d-flex flex-column">
+      <v-col class="col-12 col-md-4 d-flex flex-column">
 
         
         <Chat />
         <!-- 채팅 화면 -->
         <div class="d-flex flex-column">
           <!-- 채팅창 -->
-          <v-card outlined class="overflow-y-auto ma-4 chatlogbox" min-height="560px" max-height="560px">
-            
-            <p v-for="(log, idx) in chatlog" :key="idx">
-              {{ log.user }} ({{ log.timestamp }}): <br>{{ log.content }}
-            </p>
+          <v-card outlined class="overflow-y-auto ma-1 chatlogbox align-end" min-height="560px" max-height="560px">
+
+            <div v-for="(log, idx) in chatlog" :key="idx" :class="log.user == myUserName ? 'text-start' : 'text-end'">
+              <v-card outlined :ripple="false" :color="log.user == myUserName ? 'green' : null" class="d-inline pa-1">
+                {{ log.content }}
+              </v-card>
+              <p class="caption">
+                {{ log.user }} ({{ log.timestamp }})
+              </p>
+            </div>
           </v-card>
           <!-- 사용자 선택 -->
           <div class="ChatConnection">
-            <v-select label="누구에게 메시지를 보낼까요?" v-model="chatConnection">
+            <!-- <v-select label="누구에게 메시지를 보낼까요?" v-model="chatConnection">
 
-            </v-select>
+            </v-select> -->
 
 
             <select v-model="chatConnection">
@@ -201,8 +215,6 @@ export default {
   data: function () {
     return {
 
-      
-
       OV: undefined,
       mainStreamManager: undefined,
       publisher: undefined,
@@ -227,11 +239,8 @@ export default {
       inputChat: '',
       errorDialog: false,
 
-      
-
-      chatlog: [
-      ],
       chatConnection: 0,
+      chatlog: [],
 
     }
   },
@@ -435,9 +444,10 @@ export default {
 
   },
   computed: {
-    chatList: function () {
-      return ['모두에게']
-    }
+    // chatList: function () {
+    //   let connectionList = this.session
+    //   return ['모두에게'] + connectionList
+    // }
   },
 
   watch: {
