@@ -1,7 +1,23 @@
 <template>
   <div>
+    <!-- Nested Dialog -->
+    <v-dialog v-if="yetPassword" v-model="yetPassword" max-width="360px" persistent>
+      <v-card class="pa-3">
+        <p class="text-center body-1">해당 회의는 비밀번호가 설정되어 있습니다. <br>비밀번호를 입력해주세요.</p>
+        <p class="body-2">비밀번호 문제: {{ conference.question }}</p>
+        <v-text-field solo v-model="confPassword"></v-text-field>
+        <div class="d-flex justify-space-around">
+          <v-btn color="primary" class="my-5" @click="inputPassword(confPassword)">
+            입력
+          </v-btn>
+          <v-btn class="my-5" :to="{name: 'Home'}">
+            나가기
+          </v-btn>
+        </div>
+      </v-card>
+    </v-dialog>
     <!-- 입장 대화상자 -->
-    <v-dialog v-model="yetSession" max-width="320px" persistent>
+    <v-dialog v-else v-model="yetSession" max-width="320px" persistent>
       <v-card class="pa-3">
         <v-card-title>{{conference.title}}</v-card-title>
         <p class="text-center">
@@ -20,6 +36,7 @@
           </v-btn>
         </div>
       </v-card>
+
     </v-dialog>
 
     <!-- 에러 정보 -->
@@ -199,6 +216,7 @@ import Chat from '@/components/conference/Chat'
 
 // OpenVidu 접속 설정
 // 추후에 따로 빼어서 모듈화, 환경변수화해야 할 부분입니다.
+const SERVER_URL = process.env.VUE_APP_SERVER_URL
 const OPENVIDU_SERVER_URL = process.env.VUE_APP_OPENVIDU_SERVER_URL
 const OPENVIDU_SERVER_SECRET = 'MY_SECRET'
 
@@ -223,6 +241,7 @@ export default {
       myUserName: 'Username',
 
       yetSession: true,
+      yetPassword: true,
       session: undefined,
       
       participants: null,
@@ -251,7 +270,29 @@ export default {
     // 테스트용 데이터 탑재
     this.conference = {
       title: '회의 제목',
+      question: '1이라고 입력하세요',
+      password: '1',
+    }
 
+    axios({
+      method: 'GET',
+      baseURL: SERVER_URL,
+      url: `/conference/${this.mySessionId}`,
+
+    })
+    .then(response => {
+      console.log(response)
+      this.conference = response.data.conference
+    })
+    .catch(error => {
+      console.log(error)
+    })
+
+
+    if (this.conference.password) {
+      this.yetPassword = true
+    } else {
+      this.yetPassword = false
     }
   },
 
@@ -441,6 +482,12 @@ export default {
         })
       }
     },
+
+    inputPassword: function (str) {
+      if (str === this.conference.password) {
+        this.yetPassword = false
+      }
+    }
 
   },
   computed: {
