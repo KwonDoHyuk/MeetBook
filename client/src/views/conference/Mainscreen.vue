@@ -175,7 +175,7 @@
           <!-- 채팅 폼 -->
           <div class="d-flex flex-row">
             <div class="col-8">
-            <v-textarea no-resize v-model="inputChat" @keyup.enter="sendMessage"></v-textarea>
+            <v-textarea no-resize v-model="inputChat" @keyup.enter.prevent="sendMessage"></v-textarea>
             </div>
             <div class="col-4">
             <v-btn block @click="sendMessage">보내기</v-btn>
@@ -247,8 +247,8 @@ export default {
       participants: null,
       showMenu: false,
       
+      // 회의 정보
       conference: {
-
       },
 
       audioEnabled: undefined,
@@ -444,14 +444,14 @@ export default {
       console.log('exit')
     },
 
-    onInputChat: function () {
-      if (this.inputChat != '') {
-        console.log('input:' + this.inputChat)
+    // onInputChat: function () {
+    //   if (this.inputChat != '') {
+    //     console.log('input:' + this.inputChat)
 
-        this.chatlog.push({user: '지금 사용자', timestamp: '지금 시간', content: this.inputChat})
-        this.inputChat = ''
-      }
-    },
+    //     this.chatlog.push({user: '지금 사용자', timestamp: '지금 시간', content: this.inputChat})
+    //     this.inputChat = ''
+    //   }
+    // },
 
     sendMessage: function () {
       if(this.chatConnection === 0) {
