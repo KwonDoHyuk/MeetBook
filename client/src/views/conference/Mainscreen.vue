@@ -213,6 +213,7 @@ import axios from 'axios'
 import { OpenVidu } from 'openvidu-browser'
 import UserVideo from '@/components/conference/UserVideo'
 import Chat from '@/components/conference/Chat'
+import { mapState } from 'vuex'
 
 // OpenVidu 접속 설정
 // 추후에 따로 빼어서 모듈화, 환경변수화해야 할 부분입니다.
@@ -274,6 +275,7 @@ export default {
       password: '1',
     }
 
+    // 회의 내용 불러오기
     axios({
       method: 'GET',
       baseURL: SERVER_URL,
@@ -282,7 +284,9 @@ export default {
     })
     .then(response => {
       console.log(response)
-      this.conference = response.data.conference
+      if (response.data) {
+        this.conference = response.data.conference
+      }
     })
     .catch(error => {
       console.log(error)
@@ -335,7 +339,8 @@ export default {
 
       // user token
       this.getToken(this.mySessionId).then(token => {
-        this.session.connect(token, { clientData: this.myUserName})
+        // clientData: 접속하는 사람의 정보 입력
+        this.session.connect(token, { clientData: this.auth.user.nickname})
           .then(() => {
             let publisher = this.OV.initPublisher(undefined, {
               audioSource: undefined, // The source of audio. If undefined default microphone
@@ -422,18 +427,21 @@ export default {
 
     createToken (sessionId) {
 			return new Promise((resolve, reject) => {
-				axios
-					.post(`${OPENVIDU_SERVER_URL}/openvidu/api/sessions/${sessionId}/connection`, {}, {
-						auth: {
-							username: 'OPENVIDUAPP',
-							password: OPENVIDU_SERVER_SECRET,
-						},
-					})
-					.then(response => response.data)
-					.then(data => resolve(data.token))
-					.catch(error => reject(error.response));
-			});
-		},
+        axios({
+          method: 'GET',
+          baseURL: SERVER_URL,
+          url: `conference/${sessionId}/token`,
+          headers: {
+            'X-AUTH-TOKEN': this.auth.user.token
+          },
+        })
+        .then(response => {
+          return response.data
+        })
+        .then(data => resolve(data))
+        .catch(error => reject(error.response))
+        })
+    },
 
 
     onKick: function (userid) {
@@ -491,10 +499,12 @@ export default {
 
   },
   computed: {
+    
     // chatList: function () {
     //   let connectionList = this.session
     //   return ['모두에게'] + connectionList
     // }
+    ...mapState(['auth'])
   },
 
   watch: {
