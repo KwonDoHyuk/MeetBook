@@ -4,6 +4,7 @@
         <div class="container">
           <div class="item d-flex justify-center">
             <p class="">Meetbook © 2022</p>
+            <p class="">Ver 1.0.0</p>
           </div>
         </div>
       </footer>
