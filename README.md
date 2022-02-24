@@ -16,6 +16,9 @@ ver 1.0.0
 - 실시간 채팅
 - 귓속말 및 유저강퇴기능
 
+### 서버 아키텍쳐
+[](https://www.notion.so/public-7c865706a96b492d8ceeca34a9219b1b#975130b790a748a89a83436eecacca4b)
+
 ### 기술 스택
 ##### Frontend
 - Vue: 2.6.11
